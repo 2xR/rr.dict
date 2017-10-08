@@ -28,5 +28,4 @@ setup(
     ],
     packages=find_packages("src"),
     package_dir={"": "src"},
-    tests_require=["pytest", "tox"],
 )
