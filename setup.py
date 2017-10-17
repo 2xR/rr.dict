@@ -4,7 +4,7 @@ import re
 from setuptools import setup, find_packages
 
 here = pathlib.Path(__file__).parent
-readme_file = here / "README.md"
+readme_file = here / "README.rst"
 source_file = here / "src" / "rr" / "dict" / "__init__.py"
 version_match = re.search(r"__version__\s*=\s*(['\"])(.*)\1", source_file.read_text())
 if version_match is None:
