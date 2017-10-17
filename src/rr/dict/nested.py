@@ -45,8 +45,8 @@ def update(d, items):
 def get(d, *keys, default=UNDEFINED):
     """Get a value from the nested dictionary.
 
-    If the given path does not exist in the nested dict, the `default` value is returned if one
-    was given, otherwise a KeyError is raised for the first key that was not found.
+    If the given path does not exist in the nested dict, the `default` value (keyword-only) is
+    returned if one was given, otherwise a KeyError is raised for the first key that was not found.
     """
     try:
         for k in keys:
@@ -95,36 +95,32 @@ def setdefault(d, *item):
     Returns `get(d, *item[:-1])`, and if the path does not exist, it is created and the default
     value `item[-1]` is set.
     """
-    try:
-        return get(d, *item[:-1])
-    except KeyError:
-        return set(d, *item)
+    *intermediate_keys, last_key, value = item
+    if len(intermediate_keys) > 0:
+        d = get(d, *intermediate_keys)
+    return d.setdefault(last_key, value)
 
 
-def pop(d, *keys):
-    """Remove an item from the nested dict and return its value."""
-    return get(d, *keys[:-1]).pop(keys[-1])
+def pop(d, *keys, default=UNDEFINED):
+    """Remove an item from the nested dict and return its value.
 
+    This function works similarly to `dict.pop()`, but operates on nested dicts and deletes any
+    dicts in the path that become empty after the removal.
 
-def pop_path(d, *keys):
-    """Like `pop()`, but deletes any dicts in the path that become empty after the removal."""
+    A default value that gets returned in case the key sequence is not present in `d` can be
+    provided through the keyword-only argument `default`.
+    """
     dicts = []
     for k in keys[:-1]:
         dicts.append(d)
         d = d[k]
-    value = d.pop(keys[-1])
+    value = d.pop(keys[-1]) if default is UNDEFINED else d.pop(keys[-1], default)
     for k in reversed(keys[:-1]):
         d = dicts.pop()
-        if len(d[k]) == 0:
-            del d[k]
-        else:
+        if len(d[k]) > 0:
             break
+        del d[k]
     return value
-
-
-# set up some aliases for pop() and pop_path()
-remove = pop
-remove_path = pop_path
 
 
 def items(d, depth=None):
